@@ -1,0 +1,253 @@
+application {
+    config {
+        baseName TMS
+        applicationType monolith
+        authenticationType	jwt
+        databaseType	sql
+        devDatabaseType	postgresql
+        enableHibernateCache	false
+        enableSwaggerCodegen	true
+        enableTranslation	false
+        jhiPrefix	tms
+        languages	[vi]
+        messageBroker	false
+        nativeLanguage	vi
+        packageName	io.opt_team.tms
+        prodDatabaseType postgresql
+        searchEngine false
+        skipClient true
+    }
+    entities *
+    dto *  with mapstruct
+    service * with serviceClass
+    paginate * with pagination
+}
+
+entity Address {
+    id Long required,
+    code String maxlength(255),
+    fullName String maxlength(255),
+    street String maxlength(255),
+    streetNo String maxlength(255)
+}
+
+entity Commune {
+    id Long required,
+    name String maxlength(255)
+}
+
+entity Contractor {
+    id Long required,
+    name String maxlength(255),
+    signingDate ZonedDateTime,
+    expirationDate ZonedDateTime
+}
+
+entity CustomerAssignment {
+    id Long required
+}
+
+entity DistanceMatrix {
+    distance Double,
+    time Double
+}
+
+entity District {
+    id Long required,
+    name String maxlength(255)
+}
+
+entity Order {
+    id Long required,
+    code String maxlength(255),
+    cost Double,
+    goodType String maxlength(255),
+    immediateDelivery Boolean,
+    weight Double,
+    volume Double,
+    status String maxlength(255)
+}
+
+entity OrderItem {
+    id Long required,
+    type String maxlength(255),
+    goodType String maxlength(255),
+    weight Double,
+    volume Double,
+    numPallets Integer,
+    width Integer,
+    height Integer,
+    length Integer,
+    earliestTime ZonedDateTime,
+    latestTime ZonedDateTime,
+    waitingTimeSec Integer,
+    carryInTimeSec Integer,
+    carryOutTimeSec Integer,
+    note String maxlength(255),
+    status String maxlength(255)
+}
+
+entity Position {
+    id Long required,
+    lat Double,
+    lng Double
+}
+
+entity Province {
+    id Long required,
+    name String maxlength(255)
+}
+
+entity Schedule {
+    id Long required,
+    name String maxlength(255)
+}
+
+entity ScheduleInput {
+    id Long required,
+    status String maxlength(255)
+}
+
+entity ScheduleInputOrder {
+    id Long required
+}
+
+entity ScheduleInputVehicle {
+    id Long required
+}
+
+entity Solution {
+    id Long required,
+    type String maxlength(255),
+    finalSolution Boolean
+}
+
+entity SolutionSummary {
+    id Long required,
+    numVehicleUsed Integer,
+    totalKm Double,
+    totalGoodKg Double,
+    totalConstraint Double,
+    numViolationTrip Integer,
+    latestTime ZonedDateTime
+}
+
+entity SolutionTrip {
+    id Long required,
+    estimatedStartTime ZonedDateTime,
+    estimatedEndTime ZonedDateTime,
+    totalLoadKg Double
+}
+
+entity SolutionTripOrder {
+    id Long required
+}
+
+entity SolutionTripStopPoint {
+    id Long required,
+    estimatedArrivalTime ZonedDateTime,
+    estimatedLeaveTime ZonedDateTime,
+    stopOrder Integer
+}
+
+entity SolutionTripStopPointOrder {
+    id Long required
+}
+
+entity SolutionUnplannedOrderItem {
+    id Long required,
+    reason String maxlength(255)
+}
+
+entity SolverConfig {
+    id Long required,
+    startTime ZonedDateTime,
+    endTime ZonedDateTime,
+    solveTimeLimitSec Integer,
+    strategy String maxlength(255)
+}
+
+entity UserX {
+    id Long required,
+    phoneNumber String maxlength(255),
+    role String maxlength(255)
+}
+
+entity Vehicle {
+    id Long required,
+    type String maxlength(255),
+    licensePlatesNumber String maxlength(255),
+    maxLoadKg Double,
+    minLoadKg Double,
+    height Integer,
+    width Integer,
+    length Integer,
+    minPallets Integer,
+    maxPallets Integer,
+    registrationDate ZonedDateTime,
+    registrationExpireDate ZonedDateTime,
+    fuelType String maxlength(255),
+    averageVelocity Double,
+    code String maxlength(255),
+    maxStopPoints Integer
+}
+
+entity VehicleForbiddenAddress {
+    id Long required
+}
+
+// Relations
+relationship ManyToOne {
+    Address{province} to Province
+    Address{district} to District
+    Address{commune} to Commune
+    Address{position} to Position
+    Address{relativePosition} to Position
+    Commune{district} to District
+    Commune{centerPos} to Position
+    Contractor{address} to Address
+    CustomerAssignment{customerUserX} to UserX
+    CustomerAssignment{employeeUserX} to UserX
+    DistanceMatrix{fromPos} to Position
+    DistanceMatrix{toPos} to Position
+    District{province} to Province
+    District{centerPos} to Position
+    OrderItem{order} to Order
+    OrderItem{address} to Address
+    Province{centerPos} to Position
+    Schedule{coordinatorUserX} to UserX
+    ScheduleInput{schedule} to Schedule
+    ScheduleInput{inputSolution} to Solution
+    ScheduleInputOrder{schedule} to Schedule
+    ScheduleInputOrder{scheduleInput} to ScheduleInput
+    ScheduleInputOrder{order} to Order
+    ScheduleInputVehicle{schedule} to Schedule
+    ScheduleInputVehicle{scheduleInput} to ScheduleInput
+    ScheduleInputVehicle{vehicle} to Vehicle
+    Solution{schedule} to Schedule
+    Solution{scheduleInput} to ScheduleInput
+    SolutionSummary{solution} to Solution
+    SolutionTrip{solution} to Solution
+    SolutionTrip{fromAddress} to Address
+    SolutionTrip{toAddress} to Address
+    SolutionTrip{vehicle} to Vehicle
+    SolutionTrip{driverUserX} to UserX
+    SolutionTripOrder{trip} to SolutionTrip
+    SolutionTripOrder{order} to Order
+    SolutionTripStopPoint{trip} to SolutionTrip
+    SolutionTripStopPoint{stopPointAddress} to Address
+    SolutionTripStopPointOrder{tripStopPoint} to SolutionTripStopPoint
+    SolutionTripStopPointOrder{orderItem} to OrderItem
+    SolutionUnplannedOrderItem{solution} to Solution
+    SolutionUnplannedOrderItem{orderItem} to OrderItem
+    SolverConfig{schedule} to Schedule
+    SolverConfig{scheduleInput} to ScheduleInput
+    UserX{address} to Address
+    Vehicle{ownerUserX} to UserX
+    Vehicle{currentAddress} to Address
+    VehicleForbiddenAddress{vehicle} to Vehicle
+    VehicleForbiddenAddress{address} to Address
+}
+relationship OneToOne {
+    UserX{user} to User
+}
